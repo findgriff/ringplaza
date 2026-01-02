@@ -1,0 +1,26 @@
+{
+  "name": "ringplaza",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=18.18.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "npm --workspace @ringplaza/api run dev",
+    "dev:web": "npm --workspace @ringplaza/web run dev",
+    "build": "npm workspaces run build",
+    "lint": "npm workspaces run lint",
+    "format": "npm workspaces run format",
+    "migrate": "npm --workspace @ringplaza/api run migrate",
+    "seed": "npm --workspace @ringplaza/api run seed"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.3.3"
+  }
+}

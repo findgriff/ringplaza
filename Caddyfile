@@ -1,0 +1,19 @@
+{
+  email {$CADDY_EMAIL}
+}
+
+{$WEB_DOMAIN} {
+  reverse_proxy web:3000
+}
+
+{$API_DOMAIN} {
+  reverse_proxy api:4000
+}
+
+*.{$BASE_DOMAIN} {
+  reverse_proxy web:3000
+}
+
+http://localhost {
+  reverse_proxy web:3000
+}
