@@ -7,9 +7,19 @@ const priceIds = {
   unlimited: process.env.NEXT_PUBLIC_STRIPE_PRICE_UNLIMITED || ""
 };
 
-async function upgrade(plan: "starter" | "unlimited") {
+async function upgradeStarter() {
   "use server";
-  const priceId = priceIds[plan];
+  const priceId = priceIds.starter;
+  if (!priceId) {
+    throw new Error("Missing price ID");
+  }
+  const session = await createBillingSubscription(priceId);
+  redirect(session.url);
+}
+
+async function upgradeUnlimited() {
+  "use server";
+  const priceId = priceIds.unlimited;
   if (!priceId) {
     throw new Error("Missing price ID");
   }
@@ -47,8 +57,8 @@ export default async function PlanPage() {
           </form>
         </div>
         <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
-          <PlanCard name="Starter" price="$6.99" description="Up to 100 orders + 10 grace" cta="Stay/Choose" onSelect={() => upgrade("starter")} />
-          <PlanCard name="Unlimited" price="$15.99" description="Unlimited orders" cta="Upgrade" onSelect={() => upgrade("unlimited")} />
+          <PlanCard name="Starter" price="$6.99" description="Up to 100 orders + 10 grace" cta="Stay/Choose" onSelect={upgradeStarter} />
+          <PlanCard name="Unlimited" price="$15.99" description="Unlimited orders" cta="Upgrade" onSelect={upgradeUnlimited} />
         </div>
         <Link href="/admin" className="muted">
           Back to dashboard

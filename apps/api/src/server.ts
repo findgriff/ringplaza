@@ -39,7 +39,8 @@ app.register(fastifyRawBody, {
 app.decorateRequest("tenant", null);
 
 app.addHook("preHandler", async (request, reply) => {
-  if ((request.routeOptions.config as Record<string, unknown>)?.skipTenant) return;
+  const routeConfig = request.routeOptions.config as { skipTenant?: boolean } | undefined;
+  if (routeConfig?.skipTenant) return;
 
   const hostHeader = request.headers["x-tenant"] ?? request.headers.host;
   if (!hostHeader) {
@@ -125,6 +126,7 @@ app.post("/api/checkout", async (request, reply) => {
       .values({
         tenant_id: tenant.id,
         status: "pending",
+        procurement_status: "none",
         total_cents: body.amountCents,
         currency: body.currency.toUpperCase(),
         metadata: { channel: "rest" }
@@ -147,7 +149,10 @@ app.post("/api/checkout", async (request, reply) => {
     trx
       .updateTable("orders")
       .set({
-        metadata: { ...order.metadata, checkout_url: checkout.url }
+        metadata: {
+          ...(order.metadata as Record<string, unknown>),
+          checkout_url: checkout.url
+        }
       })
       .where("id", "=", order.id as string)
       .execute()
@@ -182,6 +187,7 @@ app.post("/api/checkout/session", async (request, reply) => {
       .values({
         tenant_id: tenant.id,
         status: "pending",
+        procurement_status: "none",
         total_cents: body.amountCents,
         currency: body.currency.toUpperCase(),
         metadata: { channel: "rest", provider: "stripe" }
@@ -203,7 +209,10 @@ app.post("/api/checkout/session", async (request, reply) => {
     trx
       .updateTable("orders")
       .set({
-        metadata: { ...order.metadata, checkout_session_id: session.id }
+        metadata: {
+          ...(order.metadata as Record<string, unknown>),
+          checkout_session_id: session.id
+        }
       })
       .where("id", "=", order.id as string)
       .execute()
@@ -234,6 +243,7 @@ app.post("/api/paypal/create-order", async (request, reply) => {
       .values({
         tenant_id: tenant.id,
         status: "pending",
+        procurement_status: "none",
         total_cents: body.amountCents,
         currency: body.currency.toUpperCase(),
         metadata: { channel: "rest", provider: "paypal" }
@@ -257,7 +267,10 @@ app.post("/api/paypal/create-order", async (request, reply) => {
     trx
       .updateTable("orders")
       .set({
-        metadata: { ...order.metadata, paypal_order_id: session.id }
+        metadata: {
+          ...(order.metadata as Record<string, unknown>),
+          paypal_order_id: session.id
+        }
       })
       .where("id", "=", order.id as string)
       .execute()

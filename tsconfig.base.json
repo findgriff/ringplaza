@@ -11,7 +11,8 @@
     "types": ["node"],
     "baseUrl": ".",
     "paths": {
-      "@ringplaza/shared/*": ["packages/shared/src/*"]
+      "@ringplaza/shared": ["packages/shared/dist"],
+      "@ringplaza/shared/*": ["packages/shared/dist/*"]
     }
   }
 }

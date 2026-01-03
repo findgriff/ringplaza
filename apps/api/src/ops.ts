@@ -71,7 +71,7 @@ export async function finalizeOrder(params: {
 }) {
   let finalized = false;
   let orderEmail: string | null = null;
-  let orderTotal = 0;
+  let orderDay: string | null = null;
 
   await withTenantContext(params.tenantId, async (trx) => {
     const order = await trx.selectFrom("orders").selectAll().where("id", "=", params.orderId).executeTakeFirst();
@@ -113,7 +113,7 @@ export async function finalizeOrder(params: {
     finalized = true;
     const meta = (update.metadata as Record<string, unknown>) || {};
     orderEmail = (meta.customer_email as string) || null;
-    orderTotal = update.total_cents;
+    orderDay = update.created_at.toISOString().slice(0, 10);
   });
 
   if (!finalized) return { alreadyFinalized: true };
@@ -125,7 +125,7 @@ export async function finalizeOrder(params: {
   });
   await recordMeteringEvent(params.tenantId, params.orderId);
   await rollupUsageMonthly(params.tenantId);
-  await rollupMetrics(params.tenantId, params.orderId, orderTotal);
+  await rollupMetrics(params.tenantId, orderDay ? { from: orderDay, to: orderDay } : undefined);
   await emitWebhook(params.tenantId, "order.paid", { orderId: params.orderId });
   await sendOrderEmail(params.tenantId, params.orderId, orderEmail ?? config.FROM_EMAIL);
   if (params.procurementEnabled) {

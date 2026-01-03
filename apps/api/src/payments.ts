@@ -1,5 +1,5 @@
 import { config } from "./config";
-import { TenantsTable } from "./types";
+import { TenantRow } from "./types";
 
 export type CheckoutSession = {
   provider: "stripe" | "paypal";
@@ -12,7 +12,7 @@ export interface PaymentGateway {
     amountCents: number;
     currency: string;
     orderId: string;
-    tenant: TenantsTable;
+    tenant: TenantRow;
     successUrl: string;
     cancelUrl: string;
   }): Promise<CheckoutSession>;
@@ -29,7 +29,7 @@ export class StripeGateway implements PaymentGateway {
     amountCents: number;
     currency: string;
     orderId: string;
-    tenant: TenantsTable;
+    tenant: TenantRow;
     successUrl: string;
     cancelUrl: string;
   }): Promise<CheckoutSession> {
@@ -53,7 +53,7 @@ export class PaypalGateway implements PaymentGateway {
     amountCents: number;
     currency: string;
     orderId: string;
-    tenant: TenantsTable;
+    tenant: TenantRow;
     successUrl: string;
     cancelUrl: string;
   }): Promise<CheckoutSession> {
@@ -76,7 +76,7 @@ export class CompositeGateway implements PaymentGateway {
     amountCents: number;
     currency: string;
     orderId: string;
-    tenant: TenantsTable;
+    tenant: TenantRow;
     successUrl: string;
     cancelUrl: string;
     provider?: "stripe" | "paypal";

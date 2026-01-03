@@ -63,6 +63,7 @@ async function seed() {
       .values({
         tenant_id: tenant.id,
         status: "paid",
+        procurement_status: "none",
         total_cents: 13800,
         currency: "USD",
         metadata: { seed: true }

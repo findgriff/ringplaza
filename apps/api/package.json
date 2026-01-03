@@ -5,13 +5,13 @@
   "main": "dist/server.js",
   "types": "dist/server.d.ts",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc -p tsconfig.json",
+    "dev": "npm --workspace @ringplaza/shared run build && tsx watch src/server.ts",
+    "build": "npm --workspace @ringplaza/shared run build && tsc -p tsconfig.json",
     "start": "node dist/server.js",
     "lint": "echo \"lint not configured yet\"",
     "format": "prettier --write \"src/**/*.{ts,tsx}\"",
     "migrate": "tsx scripts/migrate.ts",
-    "seed": "tsx scripts/seed.ts",
+    "seed": "npm --workspace @ringplaza/shared run build && tsx scripts/seed.ts",
     "metrics": "tsx scripts/aggregate-metrics.ts"
   },
   "dependencies": {
@@ -32,6 +32,9 @@
   },
   "devDependencies": {
     "@types/node": "^20.10.6",
+    "@types/nodemailer": "^6.4.14",
+    "@types/pg": "^8.10.9",
+    "@types/uuid": "^9.0.8",
     "prettier": "^3.1.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"

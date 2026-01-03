@@ -23,9 +23,10 @@ async function main() {
       "create table if not exists schema_migrations (id serial primary key, name text not null unique, executed_at timestamptz not null default now())"
     );
 
-    const executed = await client
-      .query<{ name: string }>("select name from schema_migrations order by id asc")
-      .then((r) => r.rows.map((row) => row.name));
+    const executedResult = await client.query<{ name: string }>(
+      "select name from schema_migrations order by id asc"
+    );
+    const executed = executedResult.rows.map((row) => row.name);
 
     const migrations = readdirSync(migrationsDir)
       .filter((f) => f.endsWith(".sql"))

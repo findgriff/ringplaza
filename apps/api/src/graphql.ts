@@ -1,8 +1,9 @@
-import { withTenantContext, db } from "./db";
+import { withTenantContext } from "./db";
 import { payments } from "./payments";
-import { TenantsTable } from "./types";
+import { TenantRow } from "./types";
 import { config } from "./config";
-import { incrementUsage, logAudit } from "./ops";
+import { ensureBillingAllowance, logAudit } from "./ops";
+import type { IResolvers, MercuriusContext } from "mercurius";
 
 export const schema = /* GraphQL */ `
   scalar JSON
@@ -51,11 +52,11 @@ export const schema = /* GraphQL */ `
   }
 `;
 
-export type GraphQLContext = {
-  tenant?: TenantsTable;
+export type GraphQLContext = MercuriusContext & {
+  tenant?: TenantRow;
 };
 
-export const resolvers = {
+export const resolvers: IResolvers<unknown, GraphQLContext> = {
   JSON: {
     serialize: (value: unknown) => value
   },
@@ -89,6 +90,10 @@ export const resolvers = {
       ctx: GraphQLContext
     ) => {
       if (!ctx.tenant) throw new Error("Tenant missing");
+      const allowance = await ensureBillingAllowance(ctx.tenant.id);
+      if (!allowance.allowed) {
+        throw new Error(allowance.message);
+      }
 
       const order = await withTenantContext(ctx.tenant.id, (trx) =>
         trx
@@ -96,6 +101,7 @@ export const resolvers = {
           .values({
             tenant_id: ctx.tenant!.id,
             status: "pending",
+            procurement_status: "none",
             total_cents: args.amount_cents,
             currency: args.currency.toUpperCase(),
             metadata: { channel: "graphql" }
@@ -118,14 +124,16 @@ export const resolvers = {
         trx
           .updateTable("orders")
           .set({
-            metadata: { ...order.metadata, checkout_url: session.url },
+            metadata: {
+              ...(order.metadata as Record<string, unknown>),
+              checkout_url: session.url
+            },
             status: "pending"
           })
           .where("id", "=", order.id as string)
           .execute()
       );
 
-      await incrementUsage(ctx.tenant.id);
       await logAudit(ctx.tenant.id, "order.checkout_created", {
         orderId: order.id,
         amountCents: args.amount_cents,

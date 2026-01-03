@@ -1,4 +1,4 @@
-import { ColumnType, Generated } from "kysely";
+import { ColumnType, Generated, Selectable } from "kysely";
 
 export interface PlansTable {
   id: string;
@@ -6,7 +6,7 @@ export interface PlansTable {
   monthly_price_cents: number;
   order_limit: number | null;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface TenantsTable {
@@ -19,7 +19,7 @@ export interface TenantsTable {
   timezone: string;
   theme_settings: unknown;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface TenantUsageTable {
@@ -36,7 +36,7 @@ export interface UsersTable {
   password_hash: string | null;
   role: "owner" | "admin" | "support";
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface ApiKeysTable {
@@ -56,7 +56,7 @@ export interface ProductsTable {
   description: string | null;
   status: "draft" | "active";
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface ProductVariantsTable {
@@ -67,7 +67,7 @@ export interface ProductVariantsTable {
   compare_at_price_cents: number | null;
   option_values: unknown;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface OrdersTable {
@@ -80,7 +80,7 @@ export interface OrdersTable {
   metadata: unknown;
   payment_idempotency_key: string | null;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface MetricsDailyTable {
@@ -90,7 +90,7 @@ export interface MetricsDailyTable {
   revenue_cents: number;
   aov_cents: number;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface MeteringEventsTable {
@@ -105,7 +105,7 @@ export interface UsageMonthlyTable {
   month: number;
   orders_paid: number;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface TenantSubscriptionsTable {
@@ -117,7 +117,7 @@ export interface TenantSubscriptionsTable {
   status: string | null;
   procurement_addon: boolean;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface SupplierAccountsTable {
@@ -147,7 +147,7 @@ export interface ExternalProcurementsTable {
   status: "pending" | "ordered" | "failed" | "skipped";
   metadata: unknown;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
 
 export interface WebhookSubscriptionsTable {
@@ -176,8 +176,11 @@ export interface ImportsTable {
   status: "pending" | "processing" | "completed" | "failed";
   metadata: unknown;
   created_at: ColumnType<Date, string | undefined, never>;
-  updated_at: ColumnType<Date, string | undefined, never>;
+  updated_at: ColumnType<Date, string | undefined, string | undefined>;
 }
+
+export type TenantRow = Selectable<TenantsTable>;
+export type OrderRow = Selectable<OrdersTable>;
 
 export interface Database {
   plans: PlansTable;

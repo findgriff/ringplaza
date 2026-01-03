@@ -1,10 +1,10 @@
 import Stripe from "stripe";
 import { config } from "../config";
-import { TenantsTable } from "../types";
-import { withTenantContext } from "../db";
+import { TenantRow } from "../types";
 import { finalizeOrder } from "../ops";
 import { logAudit } from "../ops";
 import { db } from "../db";
+import { sql } from "kysely";
 
 const stripe = new Stripe(config.STRIPE_SECRET_KEY, {
   apiVersion: "2023-10-16"
@@ -20,7 +20,7 @@ export async function createStripeCheckoutSession(input: {
   amountCents: number;
   currency: string;
   orderId: string;
-  tenant: TenantsTable;
+  tenant: TenantRow;
   successUrl: string;
   cancelUrl: string;
 }) {
@@ -101,7 +101,7 @@ export async function handleStripeWebhook(event: Stripe.Event) {
 }
 
 export async function createStripeSubscriptionSession(input: {
-  tenant: TenantsTable;
+  tenant: TenantRow;
   priceId: string;
   successUrl: string;
   cancelUrl: string;
@@ -121,7 +121,7 @@ export async function createStripeSubscriptionSession(input: {
   return session;
 }
 
-export async function createBillingPortalSession(input: { tenant: TenantsTable; returnUrl: string }) {
+export async function createBillingPortalSession(input: { tenant: TenantRow; returnUrl: string }) {
   const customerId = await ensureCustomer(input.tenant);
   return stripe.billingPortal.sessions.create({
     customer: customerId,
@@ -129,7 +129,7 @@ export async function createBillingPortalSession(input: { tenant: TenantsTable; 
   });
 }
 
-async function ensureCustomer(tenant: TenantsTable): Promise<string> {
+async function ensureCustomer(tenant: TenantRow): Promise<string> {
   const existing = await db
     .selectFrom("tenant_subscriptions")
     .selectAll()
@@ -151,7 +151,8 @@ async function ensureCustomer(tenant: TenantsTable): Promise<string> {
     .values({
       tenant_id: tenant.id,
       stripe_customer_id: customer.id,
-      status: "active"
+      status: "active",
+      procurement_addon: false
     })
     .onConflict((oc) =>
       oc.column("tenant_id").doUpdateSet({

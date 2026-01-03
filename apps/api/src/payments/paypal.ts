@@ -1,6 +1,5 @@
 import { config } from "../config";
-import { TenantsTable } from "../types";
-import { withTenantContext } from "../db";
+import { TenantRow } from "../types";
 import { finalizeOrder } from "../ops";
 
 const PAYPAL_API = "https://api-m.sandbox.paypal.com";
@@ -24,7 +23,7 @@ export async function createPayPalOrder(input: {
   amountCents: number;
   currency: string;
   orderId: string;
-  tenant: TenantsTable;
+  tenant: TenantRow;
   successUrl: string;
   cancelUrl: string;
 }) {

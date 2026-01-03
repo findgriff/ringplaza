@@ -10,3 +10,4 @@ tmp
 coverage
 data
 *.log
+*.tsbuildinfo
