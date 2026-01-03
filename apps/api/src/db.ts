@@ -1,7 +1,7 @@
 import { Kysely, PostgresDialect, sql } from "kysely";
 import { Pool } from "pg";
 import { config } from "./config";
-import { Database, TenantsTable } from "./types";
+import { Database, TenantRow } from "./types";
 import { defaultThemeSettings } from "@ringplaza/shared";
 
 const dialect = new PostgresDialect({
@@ -31,12 +31,13 @@ export async function withTenantContext<T>(
   fn: (trx: Kysely<Database>) => Promise<T>
 ): Promise<T> {
   return db.transaction().execute(async (trx) => {
-    await sql`set local app.current_tenant = ${tenantId}`.execute(trx);
+    const escapedTenantId = tenantId.replace(/'/g, "''");
+    await sql.raw(`set local app.current_tenant = '${escapedTenantId}'`).execute(trx);
     return fn(trx);
   });
 }
 
-export async function findTenantByHost(host: string): Promise<TenantsTable | null> {
+export async function findTenantByHost(host: string): Promise<TenantRow | null> {
   const normalizedHost = host.split(":")[0].toLowerCase();
   const tenant = await withTenantLookup((trx) =>
     trx
@@ -61,7 +62,7 @@ export async function provisionTenant(input: {
   planId: string;
   billingMode?: "saas" | "selfhost" | "appsumo";
   timezone?: string;
-}): Promise<TenantsTable> {
+}): Promise<TenantRow> {
   const previewDomain = `${input.slug}.shops.ringplaza.com`;
 
   const tenant = await db

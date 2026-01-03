@@ -141,6 +141,24 @@ create policy tenant_lookup on tenants for select
     or id = current_setting('app.current_tenant', true)::uuid
   );
 
+create policy tenant_isolation_product_variants on product_variants
+  using (
+    exists (
+      select 1
+      from products p
+      where p.id = product_id
+        and p.tenant_id = current_setting('app.current_tenant', true)::uuid
+    )
+  )
+  with check (
+    exists (
+      select 1
+      from products p
+      where p.id = product_id
+        and p.tenant_id = current_setting('app.current_tenant', true)::uuid
+    )
+  );
+
 do $$
 declare
   tbl text;
@@ -150,7 +168,6 @@ begin
     'users',
     'api_keys',
     'products',
-    'product_variants',
     'orders',
     'webhook_subscriptions',
     'audit_logs',
